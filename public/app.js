@@ -3,6 +3,7 @@ const $ = id => document.getElementById(id);
 const LANGS = window.LANGS || [];
 const isMac = /Mac|iPhone|iPad/.test(navigator.platform);
 document.querySelectorAll('kbd.mod').forEach(k => k.textContent = (isMac ? '⌘' : 'Ctrl+') + k.textContent);
+document.querySelectorAll('kbd.mod2').forEach(k => k.textContent = (isMac ? '⌘' : 'Alt+') + k.textContent);
 
 const store = {
   get(k, d) { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? d; } catch { return d; } },
@@ -51,7 +52,7 @@ function load() {
 function step(d) { idx = (idx + d + order.length) % order.length; load(); }
 function restart() {
   pos = 0; typed = []; errors = 0; wrong = ''; missAt = new Set(); start = 0; done = false; clearInterval(timer);
-  $('result').hidden = true; $('code').classList.remove('typing');
+  $('result').hidden = true; $('code').classList.remove('typing', 'done'); document.body.classList.remove('done');
   skipIndent(); render(); stats();
 }
 
@@ -72,7 +73,7 @@ function render() {
   $('code').innerHTML = h;
   $('progress').firstElementChild.style.width = (100 * pos / text.length) + '%';
   const cur = $('code').querySelector('.cur');
-  if (cur) cur.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  if (cur) { const c = $('code'), l = cur.offsetLeft, w = c.clientWidth; if (l < c.scrollLeft + 40) c.scrollLeft = Math.max(0, l - 40); else if (l > c.scrollLeft + w - 60) c.scrollLeft = l - w + 60; }
   showKey();
 }
 const fmt = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
@@ -95,13 +96,14 @@ function type(ch) {
   if (!start) { start = Date.now(); timer = setInterval(stats, 250); $('code').classList.add('typing'); }
   if (ch !== text[pos]) {
     errors++; missAt.add(pos); wrong = ch;
-    render(); stats(); shake(); return;
+    render(); stats(); shake(); flashWrong(ch); return;
   }
   wrong = ''; typed[pos] = !missAt.has(pos); pos++;
   if (ch === '\n') skipIndent();
   render(); stats();
   if (pos >= text.length) finish();
 }
+function flashWrong(ch) { const k = KEYMAP[ch] || KEYMAP[ch.toLowerCase()]; if (!k) return; k.el.classList.remove('wrongkey'); void k.el.offsetWidth; k.el.classList.add('wrongkey'); }
 function shake() { const c = $('code').querySelector('.cur'); if (c) { c.classList.remove('shake'); void c.offsetWidth; c.classList.add('shake'); } }
 function backspace(word) {
   if (done) return;
@@ -118,13 +120,73 @@ function finish() {
   done = true; clearInterval(timer); stats();
   const w = wpmNow(), acc = $('acc').textContent;
   const best = store.get('best', {}), prev = best[lang.id] || 0;
-  const rec = w > prev && w < 300 && acc !== '0%';
+  const sec = (Date.now() - start) / 1000, accN = parseInt(acc);
+  const rec = w > prev && w < 250 && sec >= 8 && accN >= 90;
   if (rec) { best[lang.id] = w; store.set('best', best); }
   const hist = store.get('hist', []); hist.unshift({ l: lang.id, w, a: acc, t: Date.now() }); store.set('hist', hist.slice(0, 200));
   $('rWpm').textContent = w;
-  $('rLine').innerHTML = `${lang.name} · точность ${acc} · ${errors} ${plural(errors,'ошибка','ошибки','ошибок')} · ${$('time').textContent}` + (rec ? ` · <span class="rec">новый рекорд!</span>` : prev ? ` · рекорд ${prev}` : '');
-  $('result').hidden = false; stats();
-  $('result').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  last = { w, acc, time: $('time').textContent, err: errors, rec };
+  $('rLine').innerHTML = `${lang.name} · точность ${acc} · ${errors} ${plural(errors,'ошибка','ошибки','ошибок')} · ${$('time').textContent}` + (rec ? `<br><span class="rec">Новый рекорд по ${lang.name}: ${w} WPM${prev ? ` (+${w - prev})` : ''}</span>` : prev ? ` · рекорд ${prev}` : '') + (()=>{const h=store.get('hist',[]).filter(x=>x.l===lang.id).slice(0,10);return h.length>1?`<br>среднее за последние ${h.length}: ${Math.round(h.reduce((a,x)=>a+x.w,0)/h.length)} WPM`:''})();
+  $('result').hidden = false; $('code').classList.add('done'); document.body.classList.add('done'); render(); stats();
+}
+
+
+/* ---------- share card ---------- */
+let last = null;
+function loadImg(src) { return new Promise(r => { const i = new Image(); i.crossOrigin = 'anonymous'; i.onload = () => r(i); i.onerror = () => r(null); i.src = src; }); }
+async function makeCard() {
+  await document.fonts.ready;
+  const W = 1200, H = 630, c = document.createElement('canvas'); c.width = W; c.height = H;
+  const x = c.getContext('2d');
+  x.fillStyle = '#18181a'; x.fillRect(0, 0, W, H);
+  const g = x.createRadialGradient(1000, 80, 0, 1000, 80, 520); g.addColorStop(0, '#ffd23f30'); g.addColorStop(1, '#ffd23f00');
+  x.fillStyle = g; x.fillRect(0, 0, W, H);
+  const mono = w => `${w} JetBrains Mono, monospace`, sans = w => `${w} Inter, sans-serif`;
+  x.textBaseline = 'alphabetic';
+  x.font = mono('700 34px'); x.fillStyle = '#f2efe8'; x.fillText('code', 72, 104);
+  let lw = x.measureText('code').width; x.fillStyle = '#ffd23f'; x.fillText('_', 72 + lw, 104);
+  x.fillStyle = '#f2efe8'; x.fillText('typing', 72 + lw + x.measureText('_').width, 104);
+  // language chip
+  const img = await loadImg(ICON(lang));
+  x.fillStyle = '#f4f1ea'; roundRect(x, 72, 160, 64, 64, 14); x.fill();
+  if (img) x.drawImage(img, 82, 170, 44, 44);
+  x.font = sans('700 34px'); x.fillStyle = '#f2efe8'; x.fillText(lang.name, 156, 204);
+  // big wpm
+  x.font = mono('700 210px'); x.fillStyle = '#ffd23f'; x.fillText(String(last.w), 64, 440);
+  const ww = x.measureText(String(last.w)).width;
+  x.font = mono('700 56px'); x.fillStyle = '#8a877f'; x.fillText('WPM', 84 + ww, 440);
+  // stats
+  const st = [[last.acc, 'ТОЧНОСТЬ'], [last.time, 'ВРЕМЯ'], [String(last.err), plural(last.err, 'ОШИБКА', 'ОШИБКИ', 'ОШИБОК')]];
+  st.forEach(([v, l], i) => { const sx = 72 + i * 230; x.font = mono('700 44px'); x.fillStyle = '#f2efe8'; x.fillText(v, sx, 528); x.font = sans('600 16px'); x.fillStyle = '#8a877f'; x.fillText(l, sx, 556); });
+  if (last.rec) { x.font = sans('700 26px'); x.fillStyle = '#18181a'; const t = 'новый рекорд'; const tw = x.measureText(t).width; x.fillStyle = '#ffd23f'; roundRect(x, W - 72 - tw - 36, 70, tw + 36, 48, 24); x.fill(); x.fillStyle = '#18181a'; x.fillText(t, W - 72 - tw - 18, 103); }
+  // code preview
+  x.save(); x.globalAlpha = .9; x.fillStyle = '#212124'; roundRect(x, 780, 200, 360, 250, 16); x.fill(); x.restore();
+  x.font = mono('400 15px'); let y = 238;
+  const COL = { k: '#c792ea', s: '#c3e88d', c: '#8b96a3', n: '#f78c6c', f: '#82aaff', p: '#89ddff', '': '#f2efe8' };
+  const cw = x.measureText('M').width; let col = 0, row = 0;
+  for (let i = 0; i < text.length && row < 9; i++) {
+    if (text[i] === '\n') { row++; col = 0; continue; }
+    if (col < 34) { x.fillStyle = COL[hl[i] || '']; x.fillText(text[i], 802 + col * cw, y + row * 24); }
+    col++;
+  }
+  x.font = mono('700 24px'); x.fillStyle = '#ffd23f'; const u = 'typing.antonkulakov.com'; x.fillText(u, W - 72 - x.measureText(u).width, 556);
+  return new Promise(r => c.toBlob(r, 'image/png'));
+}
+function roundRect(x, a, b, w, h, r) { x.beginPath(); x.moveTo(a + r, b); x.arcTo(a + w, b, a + w, b + h, r); x.arcTo(a + w, b + h, a, b + h, r); x.arcTo(a, b + h, a, b, r); x.arcTo(a, b, a + w, b, r); x.closePath(); }
+function toast(msg) { const t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 2600); }
+async function copyCard() {
+  if (!last) return;
+  try {
+    const blob = makeCard();
+    if (navigator.clipboard && window.ClipboardItem) { await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]); toast('Картинка скопирована. Вставь в Telegram или X: ⌘V'); return; }
+  } catch (e) {}
+  saveCard();
+}
+async function saveCard() {
+  if (!last) return;
+  const blob = await makeCard(), a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = `code-typing-${lang.id}-${last.w}wpm.png`; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000); toast('Картинка сохранена');
 }
 
 /* ---------- keyboard hint ---------- */
@@ -200,7 +262,7 @@ function drawGrid() {
   shown = LANGS.filter(l => !q || l.name.toLowerCase().includes(q) || l.id.includes(q));
   sel = Math.min(sel, Math.max(0, shown.length - 1));
   $('grid').innerHTML = shown.length ? shown.map((l, i) =>
-    `<button class="lc${i === sel ? ' sel' : ''}${l === lang ? ' cur' : ''}" data-i="${i}"><img src="${ICON(l)}" alt=""><div><b>${l.name}</b><span>${l.snippets.length} примеров${store.get('best', {})[l.id] ? ' · ' + store.get('best', {})[l.id] + ' WPM' : ''}</span></div></button>`
+    `<button class="lc${i === sel ? ' sel' : ''}${l === lang ? ' cur' : ''}" data-i="${i}"><img src="${ICON(l)}" alt=""><div><b>${l.name}</b><span>${l.snippets.length} примеров${store.get('best', {})[l.id] ? ' · рекорд ' + store.get('best', {})[l.id] : ''}</span></div></button>`
   ).join('') : '<div class="empty">Такого языка пока нет</div>';
   const s = $('grid').querySelector('.sel'); if (s) s.scrollIntoView({ block: 'nearest' });
 }
@@ -223,13 +285,14 @@ document.addEventListener('keydown', e => {
     else if (e.key === 'Escape') { e.preventDefault(); closeModal(); }
     return;
   }
-  if (mod && e.code === 'KeyJ') { e.preventDefault(); toggleKb(); return; }
+  if ((isMac ? e.metaKey : e.altKey) && e.code === 'KeyJ') { e.preventDefault(); toggleKb(); return; }
   if (e.metaKey || e.ctrlKey) return;
   if (e.key === 'Tab') { e.preventDefault(); step(e.shiftKey ? -1 : 1); return; }
   if (e.key === 'Escape') { e.preventDefault(); restart(); return; }
-  if (done) { if (e.key === 'Enter') { e.preventDefault(); step(1); } return; }
+  if (done) { if (e.key === 'Enter') { e.preventDefault(); step(1); } else if (e.code === 'KeyC') { e.preventDefault(); copyCard(); } else if (e.code === 'KeyD') { e.preventDefault(); saveCard(); } return; }
   if (e.key === 'Backspace') { e.preventDefault(); backspace(e.altKey); return; }
   if (e.altKey && e.key.length !== 1) return;
+  if (e.altKey && !isMac) return;
   const ch = e.key === 'Enter' ? '\n' : e.key;
   if (ch.length !== 1) return;
   if (e.target.tagName === 'INPUT') return;
@@ -241,7 +304,12 @@ $('restartBtn').onclick = e => { e.currentTarget.blur(); restart(); };
 $('kbBtn').onclick = e => { e.currentTarget.blur(); toggleKb(); };
 $('rNext').onclick = () => step(1);
 $('rAgain').onclick = restart;
+$('rCopy').onclick = copyCard;
+$('rSave').onclick = saveCard;
 document.querySelectorAll('button').forEach(b => b.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') e.preventDefault(); }));
 
+window.addEventListener('blur', () => document.querySelector('.editor').classList.add('blurred'));
+window.addEventListener('focus', () => document.querySelector('.editor').classList.remove('blurred'));
+document.addEventListener('keydown', () => document.querySelector('.editor').classList.remove('blurred'), true);
 if (LANGS.length) setLang(lang);
 })();

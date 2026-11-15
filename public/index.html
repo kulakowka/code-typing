@@ -5,6 +5,23 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>code_typing — тренажёр слепой печати кода</title>
 <meta name="description" content="Тренажёр слепой печати для программистов: печатай настоящий код на 25 языках. Подсказка пальцев, WPM, горячие клавиши.">
+<link rel="canonical" href="https://typing.antonkulakov.com/">
+<meta name="theme-color" content="#18181a">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="code_typing">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:url" content="https://typing.antonkulakov.com/">
+<meta property="og:title" content="code_typing — слепая печать настоящего кода">
+<meta property="og:description" content="Тренажёр для программистов: 25 языков, подсказка пальцев, всё с клавиатуры. Бесплатно, без регистрации.">
+<meta property="og:image" content="https://typing.antonkulakov.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="code_typing — тренажёр слепой печати кода">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="code_typing — слепая печать настоящего кода">
+<meta name="twitter:description" content="Тренажёр для программистов: 25 языков, подсказка пальцев, всё с клавиатуры.">
+<meta name="twitter:image" content="https://typing.antonkulakov.com/og.png">
+<meta name="author" content="Антон Кулаков">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%231c1c1e'/><text x='6' y='23' font-family='monospace' font-size='18' font-weight='700' fill='%23ffd23f'>_</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -17,7 +34,7 @@
   <div class="spacer"></div>
   <button id="restartBtn" class="btn" title="Начать заново">⟲ Заново <kbd>Esc</kbd></button>
   <button id="nextBtn" class="btn" title="Другой пример">Дальше → <kbd>Tab</kbd></button>
-  <button id="kbBtn" class="btn icon" title="Показать или скрыть клавиатуру">Пальцы <kbd class="mod">J</kbd></button>
+  <button id="kbBtn" class="btn icon" title="Показать или скрыть клавиатуру">Пальцы <kbd class="mod2">J</kbd></button>
 </header>
 
 <main>
@@ -29,6 +46,7 @@
     <div class="best"><b id="best">—</b><span>рекорд</span></div>
   </div>
 
+  <div id="mobileNote">⌨️ Тренажёр работает с физической клавиатурой. Открой на компьютере.</div>
   <section class="editor">
     <div class="tabbar">
       <span class="dots"><i></i><i></i><i></i></span>
@@ -36,7 +54,7 @@
       <span id="counter" class="counter"></span>
     </div>
     <div id="code" tabindex="0" spellcheck="false"></div>
-    <div id="focusHint" class="focus-hint">Кликни сюда или нажми любую клавишу, чтобы печатать</div>
+    <div id="focusHint" class="focus-hint">Нажми любую клавишу, чтобы продолжить</div>
     <div id="progress"><i></i></div>
   </section>
 
@@ -46,6 +64,10 @@
     <div class="ractions">
       <button id="rNext" class="btn primary">Следующий пример <kbd>Enter</kbd></button>
       <button id="rAgain" class="btn">Этот ещё раз <kbd>Esc</kbd></button>
+      <button id="rCopy" class="btn">📋 Копировать картинку <kbd>C</kbd></button>
+      <button id="rSave" class="btn">⬇ Скачать <kbd>D</kbd></button>
+    </div>
+    <div id="toast" hidden>
     </div>
   </section>
 
@@ -60,8 +82,8 @@
     <span><kbd>Tab</kbd> следующий пример</span>
     <span><kbd>⇧</kbd><kbd>Tab</kbd> прошлый</span>
     <span><kbd>Esc</kbd> заново</span>
-    <span><kbd class="mod">J</kbd> клавиатура</span>
-    <span>отступы ставятся сами</span>
+    <span><kbd class="mod2">J</kbd> клавиатура</span>
+    <span><kbd>⌥</kbd><kbd>⌫</kbd> стереть слово</span>
   </div>
 </main>
 

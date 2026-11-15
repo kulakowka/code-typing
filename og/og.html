@@ -1,0 +1,54 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+body{margin:0;width:1200px;height:630px;background:#18181a;color:#f2efe8;font-family:Inter,sans-serif;overflow:hidden;position:relative}
+.glow{position:absolute;right:-200px;top:-200px;width:700px;height:700px;background:radial-gradient(#ffd23f22,transparent 65%)}
+.wrap{position:absolute;inset:0;padding:64px 72px;display:flex;flex-direction:column}
+.logo{font:700 34px 'JetBrains Mono',monospace}.logo span{color:#ffd23f}
+h1{font:800 64px/1.05 Inter;margin:34px 0 0;letter-spacing:-1.5px;max-width:640px}
+h1 em{font-style:normal;color:#ffd23f}
+p{font:500 24px/1.4 Inter;color:#a5a29a;margin:18px 0 0;max-width:520px}
+.url{margin-top:auto;font:700 26px 'JetBrains Mono',monospace;color:#ffd23f}
+.ed{position:absolute;right:64px;top:110px;width:470px;background:#212124;border:1px solid #34343a;border-radius:18px;box-shadow:0 30px 80px #0008}
+.tb{display:flex;gap:8px;padding:14px 18px;border-bottom:1px solid #34343a;font:15px 'JetBrains Mono';color:#8a877f;align-items:center}
+.tb i{width:12px;height:12px;border-radius:50%;background:#ff5f56}.tb i:nth-child(2){background:#ffbd2e}.tb i:nth-child(3){background:#27c93f}
+.tb b{margin-left:8px;font-weight:400;color:#f2efe8}
+pre{font-variant-ligatures:none;margin:0;padding:22px 24px;font:21px/1.7 'JetBrains Mono',monospace}
+.k{color:#c792ea}.f{color:#82aaff}.s{color:#c3e88d}.p{color:#89ddff}.d{opacity:.35}
+.cur{border-left:3px solid #ffd23f;margin-left:-1px}
+.bad{color:#ff5f56;background:#ff5f5633;border-radius:3px;position:relative}
+.badge{position:absolute;left:50%;top:-24px;transform:translateX(-50%);background:#ff5f56;color:#fff;font:700 13px 'JetBrains Mono';padding:2px 6px;border-radius:5px}
+.stats{position:absolute;right:64px;top:528px;width:470px;display:flex;gap:30px;font:700 34px 'JetBrains Mono';color:#ffd23f}
+.stats span{display:block;font:500 13px Inter;color:#8a877f;letter-spacing:.08em;margin-top:2px}
+.langs{display:flex;gap:10px;margin-top:30px}
+.langs img{width:44px;height:44px;background:#f4f1ea;border-radius:10px;padding:6px;box-sizing:border-box}
+pre,pre *{font-feature-settings:"calt" 0,"liga" 0;font-variant-ligatures:none}</style></head><body>
+<div class="glow"></div>
+<div class="wrap">
+  <div class="logo">code<span>_</span>typing</div>
+  <h1>Слепая печать <em>настоящего кода</em></h1>
+  <p>25 языков, подсказка пальцев<br>и горячие клавиши</p>
+  <div class="langs">
+    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.16.0/icons/javascript/javascript-original.svg">
+    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.16.0/icons/python/python-original.svg">
+    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.16.0/icons/typescript/typescript-original.svg">
+    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.16.0/icons/go/go-original.svg">
+    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.16.0/icons/rust/rust-original.svg">
+    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.16.0/icons/java/java-original.svg">
+    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.16.0/icons/postgresql/postgresql-original.svg">
+  </div>
+  <div class="url">typing.antonkulakov.com</div>
+</div>
+<div class="ed">
+  <div class="tb"><i></i><i></i><i></i><b>app.js</b></div>
+<pre><span class="k">const</span> <span class="f">debounce</span> <span class="p">=</span> (fn, ms) <span class="p">=&gt;</span> {
+  <span class="k">let</span> t<span class="p">;</span>
+  <span class="k">return</span> (...a) <span class="p">=&gt;</span> {
+    <span class="f">clear</span><span class="bad"><span class="badge">r</span>T</span><span class="cur d"></span><span class="d">imeout(t);</span>
+<span class="d">    t = setTimeout(fn, ms);</span>
+<span class="d">  };</span>
+<span class="d">};</span></pre>
+</div>
+<div class="stats"><div>72<span>WPM</span></div><div>98%<span>ТОЧНОСТЬ</span></div><div>0:41<span>ВРЕМЯ</span></div></div>
+</body></html>
