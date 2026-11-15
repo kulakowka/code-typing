@@ -1,1 +1,2 @@
-{"hosting":{"site":"code-typing-ak","public":"public","cleanUrls":true}}
+{"hosting":{"site":"code-typing-ak","public":"public","cleanUrls":true,
+ "headers":[{"source":"**","headers":[{"key":"Cache-Control","value":"no-cache"}]}]}}
