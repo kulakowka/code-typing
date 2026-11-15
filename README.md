@@ -1,3 +1,14 @@
-Code typing trainer: typing.antonkulakov.com
-Firebase project antonkulakov, site code-typing-ak.
-Deploy: firebase deploy --only hosting
+# code_typing
+
+Тренажёр слепой печати кода для программистов: https://typing.antonkulakov.com
+
+- 25 языков, ~200 реальных примеров кода (`public/snippets.js`)
+- подсветка синтаксиса, подсказка пальцев на клавиатуре
+- ошибка не пропускается: печатаешь, пока не нажмёшь верную клавишу
+- всё с клавиатуры: ⌘K язык, Tab дальше, Esc заново, ⌘J клавиатура
+
+Без сборки и зависимостей: статичные `index.html`, `style.css`, `app.js`.
+
+```bash
+firebase deploy --only hosting
+```
