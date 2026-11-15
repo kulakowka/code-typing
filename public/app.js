@@ -113,6 +113,7 @@ function backspace(word) {
   } while (word && pos > 0 && /\w/.test(text[pos - 1]) && /\w/.test(text[pos]));
   typed.length = pos; render(); stats();
 }
+function plural(n,a,b,c){const m=n%10,h=n%100;return m===1&&h!==11?a:m>=2&&m<=4&&(h<12||h>14)?b:c}
 function finish() {
   done = true; clearInterval(timer); stats();
   const w = wpmNow(), acc = $('acc').textContent;
@@ -121,7 +122,7 @@ function finish() {
   if (rec) { best[lang.id] = w; store.set('best', best); }
   const hist = store.get('hist', []); hist.unshift({ l: lang.id, w, a: acc, t: Date.now() }); store.set('hist', hist.slice(0, 200));
   $('rWpm').textContent = w;
-  $('rLine').innerHTML = `${lang.name} · точность ${acc} · ${errors} ош. · ${$('time').textContent}` + (rec ? ` · <span class="rec">новый рекорд!</span>` : prev ? ` · рекорд ${prev}` : '');
+  $('rLine').innerHTML = `${lang.name} · точность ${acc} · ${errors} ${plural(errors,'ошибка','ошибки','ошибок')} · ${$('time').textContent}` + (rec ? ` · <span class="rec">новый рекорд!</span>` : prev ? ` · рекорд ${prev}` : '');
   $('result').hidden = false; stats();
   $('result').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
 }
