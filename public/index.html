@@ -20,7 +20,7 @@ main{flex:1;max-width:960px;width:100%;margin:0 auto;padding:16px}
 .stats{display:flex;gap:24px;font:14px 'JetBrains Mono',monospace;color:var(--dim);margin-bottom:12px}
 .stats b{color:var(--acc);font-size:22px;display:block}
 #code{background:var(--panel);border-radius:12px;padding:24px;font:18px/1.6 'JetBrains Mono',monospace;white-space:pre;overflow-x:auto;outline:none;position:relative;min-height:200px;cursor:text}
-#code .t{color:var(--dim)}#code .ok{color:var(--ok)}#code .bad{color:var(--bad);background:#ff5f5622;border-radius:2px}
+#code .t{opacity:.38}#code .k{color:#c792ea}#code .s{color:#c3e88d}#code .c{color:#7f8c98;font-style:italic}#code .n{color:#f78c6c}#code .f{color:#82aaff}#code .p{color:#89ddff}#code .bad{color:var(--bad)!important;opacity:1}#code .bad{background:#ff5f5622;border-radius:2px}
 #code .cur{border-left:2px solid var(--acc);margin-left:-2px;animation:b 1s steps(1) infinite}
 @keyframes b{50%{border-color:transparent}}
 #code .nl::after{content:'↵';color:#ffffff22}
@@ -125,6 +125,22 @@ Bash:[
 done`,
 `git log --oneline --since="1 week ago" | wc -l`,
 `docker run --rm -p 8080:80 -v "$PWD":/usr/share/nginx/html nginx:alpine`]};
+
+const KW={JavaScript:'const let var function return async await if else for of in while new class export import from try catch throw true false null undefined typeof',
+TypeScript:'const let var function return async await if else for of in while new class export import from try catch throw true false null undefined type interface extends string number boolean Promise Array',
+Python:'def return for in if else elif with as import from async await class None True False lambda print len range not and or is',
+Go:'func return for range if else err nil var const type struct map string int bool package import go defer',
+SQL:'SELECT FROM WHERE LEFT JOIN ON AS GROUP BY ORDER DESC ASC LIMIT COUNT CREATE INDEX CONCURRENTLY NOW INTERVAL INSERT INTO VALUES UPDATE SET AND OR',
+Bash:'for in do done if then fi else echo export'};
+function highlight(t,lang){
+  const kw=new Set(KW[lang].split(' ')),out=new Array(t.length).fill('');
+  const cm=lang==='Python'||lang==='Bash'?'#[^\\n]*':lang==='SQL'?'--[^\\n]*':'//[^\\n]*';
+  const re=new RegExp(`(${cm})|("(?:\\\\.|[^"\\\\\\n])*"|'(?:\\\\.|[^'\\\\\\n])*'|\`(?:\\\\.|[^\`\\\\])*\`)|(\\b\\d+(?:\\.\\d+)?\\b)|([A-Za-z_$][\\w$]*)(?=\\s*\\()|([A-Za-z_$][\\w$]*)|([{}()\\[\\];,.:=<>|&!?+\\-*/%@])`,'g');
+  let m;while(m=re.exec(t)){const c=m[1]?'c':m[2]?'s':m[3]?'n':m[4]?(kw.has(m[4])?'k':'f'):m[5]?(kw.has(m[5])?'k':''):'p';
+    for(let i=m.index;i<m.index+m[0].length;i++)out[i]=c}
+  return out;
+}
+let hl=[];
 const $=id=>document.getElementById(id);
 const store={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
 for(const l of Object.keys(S))$('lang').add(new Option(l,l));
@@ -132,14 +148,14 @@ $('lang').value=store.get('lang','JavaScript');
 let text,pos,typed,errors,start,timer,last=-1;
 function pick(){const a=S[$('lang').value];let i;do i=Math.floor(Math.random()*a.length);while(a.length>1&&i===last);last=i;return a[i]}
 function reset(newText){
-  if(newText||!text)text=pick();
+  if(newText||!text){text=pick();hl=highlight(text,$('lang').value)}
   pos=0;typed=[];errors=0;start=null;clearInterval(timer);
   $('result').style.display='none';render();stats();$('code').focus();
 }
 function render(){
   let h='';
   for(let i=0;i<text.length;i++){
-    const c=text[i],cls=i<pos?(typed[i]?'ok':'bad'):'t';
+    const c=text[i],cls=(hl[i]||'')+' '+(i<pos?(typed[i]?'ok':'bad'):'t');
     const ch=c==='\n'?' ':c.replace(/&/g,'&amp;').replace(/</g,'&lt;');
     h+=`<span class="${cls}${i===pos?' cur':''}${c==='\n'?' nl':''}">${ch}</span>${c==='\n'?'\n':''}`;
   }
