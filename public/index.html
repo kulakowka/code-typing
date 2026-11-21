@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>code_typing — тренажёр слепой печати кода</title>
-<meta name="description" content="Тренажёр слепой печати для программистов: печатай настоящий код на 25 языках. Подсказка пальцев, WPM, горячие клавиши.">
+<title>code_typing — тренажёр слепой печати кода и рабочего английского</title>
+<meta name="description" content="Тренажёр слепой печати для программистов: печатай настоящий код на 25 языках и английские фразы из код-ревью, пул-реквестов и рабочих чатов. Подсказка пальцев, WPM, горячие клавиши.">
 <link rel="canonical" href="https://typing.antonkulakov.com/">
 <meta name="theme-color" content="#18181a">
 <meta property="og:type" content="website">
@@ -30,7 +30,8 @@
 <body>
 <header>
   <a class="logo" href="/">code<span>_</span>typing</a>
-  <button id="langBtn" class="btn lang" title="Сменить язык"><img id="langIcon" alt=""><span id="langName"></span><kbd class="mod">K</kbd></button>
+  <div id="modeSeg" class="seg"><button data-m="code" title="Печатать код">Код</button><button data-m="en" title="Печатать английские фразы для работы">English</button></div>
+  <button id="langBtn" class="btn lang" title="Сменить язык или тему"><img id="langIcon" alt=""><span id="langName"></span><kbd class="mod">K</kbd></button>
   <div class="spacer"></div>
   <button id="restartBtn" class="btn" title="Начать заново">⟲ Заново <kbd>Esc</kbd></button>
   <button id="nextBtn" class="btn" title="Другой пример">Дальше → <kbd>Tab</kbd></button>
@@ -54,6 +55,7 @@
       <span id="counter" class="counter"></span>
     </div>
     <div id="code" tabindex="0" spellcheck="false"></div>
+    <div id="tr" hidden></div>
     <div id="focusHint" class="focus-hint">Нажми любую клавишу, чтобы продолжить</div>
     <div id="progress"><i></i></div>
   </section>
@@ -78,7 +80,7 @@
   </section>
 
   <div class="legend">
-    <span><kbd class="mod">K</kbd> язык</span>
+    <span><kbd class="mod">K</kbd> язык или тема</span>
     <span><kbd>Tab</kbd> следующий пример</span>
     <span><kbd>⇧</kbd><kbd>Tab</kbd> прошлый</span>
     <span><kbd>Esc</kbd> заново</span>
@@ -88,8 +90,8 @@
 </main>
 
 <div id="modal" hidden>
-  <div class="sheet" role="dialog" aria-label="Выбор языка">
-    <div class="search"><span>⌕</span><input id="q" placeholder="Найти язык…" autocomplete="off" spellcheck="false"><kbd>Esc</kbd></div>
+  <div class="sheet" role="dialog" aria-label="Выбор языка или темы">
+    <div class="search"><span>⌕</span><input id="q" placeholder="Найти язык или тему…" autocomplete="off" spellcheck="false"><kbd>Esc</kbd></div>
     <div id="grid"></div>
     <div class="mhint"><span><kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd> выбрать</span><span><kbd>Enter</kbd> открыть</span><span>печатай, чтобы искать</span></div>
   </div>
@@ -103,6 +105,7 @@
 </footer>
 
 <script src="snippets.js"></script>
+<script src="english.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
